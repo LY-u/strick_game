@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>见缝插针</title>
+  <style>
+    body,html,canvas{
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+    }
+    canvas{
+      border: 1px solid #dedede;
+      outline: none;
+      transform-origin: 0 0;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+  </style>
+</head>
+<body>
+  <canvas id='panel' width="400" height="500"></canvas>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/layer/3.0.3/layer.min.js"></script>
+<!-- <script src="https://cdn.bootcss.com/layer/3.0.3/mobile/layer.min.js"></script> -->
+<script>
+
+  
+
+  var cz = new JFCZ('panel', {
+    centerX: 200,
+    centerY: 200,
+    mainRadius: 50,
+    ballRadius: 10,
+    line: 100
+  })
+  // cz.init()
+  window.onload = function(){
+    cz.skip()
+  }
+
+  function JFCZ (id,options){
+    this.centerX = options.centerX;
+    this.centerY = options.centerY;
+    this.mainRadius = options.mainRadius;
+    this.ballRadius = options.ballRadius;
+    this.line = options.line;
+    var _this = this
+
+    var canvas = document.getElementById(id);
+    var ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.translate(0.5, 0.5);
+
+    var w = window.innerWidth
+    if (w < 400) {
+      // console.log(w)
+      var scale = w / 400
+      // console.log(scale)
+      canvas.style.transform = 'scale(' + scale + ',' + scale + ')'
+    }
+
+    var level = 0               // 难度
+    var levelRank = [
+      { "ballNum": 3, "waitNum": 5, "speed": 1, "dir": 0 }, 
+      { "ballNum": 3, "waitNum": 10, "speed": 1, "dir": 0 },
+      { "ballNum": 3, "waitNum": 14, "speed": 1, "dir": 0 },
+      { "ballNum": 4, "waitNum": 10, "speed": 1, "dir": 0 },
+      { "ballNum": 4, "waitNum": 13, "speed": 1, "dir": 0 },
+      { "ballNum": 4, "waitNum": 14, "speed": 2, "dir": 0 },
+      { "ballNum": 5, "waitNum": 10, "speed": 1, "dir": 0 },
+      { "ballNum": 5, "waitNum": 14, "speed": 1, "dir": 1 },
+      { "ballNum": 5, "waitNum": 10, "speed": 2, "dir": 1 },
+      { "ballNum": 6, "waitNum": 12, "speed": 1, "dir": 0 },
+      { "ballNum": 6, "waitNum": 13, "speed": 2, "dir": 1 },
+      { "ballNum": 6, "waitNum": 10, "speed": 3, "dir": 0 },
+      { "ballNum": 7, "waitNum": 12, "speed": 3, "dir": 1 },
+      { "ballNum": 7, "waitNum": 10, "speed": 4, "dir": 1 },
+    ]
+    var ballNum = 0          // 绘制小球
+    var waitNum = 0          // 待绘制小球
+    var speed = 0            // 转动速度
+    var dir = 0              // 转向
+    var gameOver = false     // 结束状态
+    
+    var balls, waitBalls 
+    
+
+    
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+
+    this.init = function(){
+      ballNum = levelRank[level].ballNum
+      waitNum = levelRank[level].waitNum
+      speed = levelRank[level].speed
+      dir = levelRank[level].dir
+      gameOver = false                     
+
+      balls = []
+      waitBalls = []
+      // 初始化小球
+      for (var i = 0; i < ballNum; i++) {
+        var angle = 360 / ballNum * i
+        let data = { angle: angle, numStr: '' }
+        balls.push(data)
+      }
+      // 等待小球
+      for (var i = waitNum; i > 0; i--) {
+        waitBalls.push({
+          angle: '',
+          numStr: i
+        })
+      }
+
+      this.startGame()
+      this.drawWaitBalls()
+    }
+    // this.clear = function(){}
+    this.skip = function(){
+      layer.prompt({ title: '请在1~12中选择一个关卡' }, function (pass, index) {
+        let n = parseInt(pass)
+        if(n>=1 && n<= levelRank.length){
+          level = n-1
+        }else{
+          level = 0
+        }
+        _this.init()
+        layer.close(index);
+      });
+    }
+
+    // 开始绘制
+    this.startGame = function(){
+      ctx.save()
+      ctx.clearRect(0, 0, this.centerX * 2, this.centerY + this.line + this.mainRadius + 30)
+      this.drawPanel()
+      ctx.translate(this.centerX, this.centerY)
+      // console.log(balls)
+      balls.forEach(function (i, j) {
+        ctx.save()
+        ctx.rotate(Math.PI / 180 * i.angle)
+        // console.log(i.angle,Math.PI / 180 * i.angle)
+        if (dir) {
+          // 逆向
+          i.angle -= parseInt(speed)
+          if (i.angle < -360) i.angle = i.angle + 360
+        } else {
+          i.angle += parseInt(speed)
+          if (i.angle > 360) i.angle = i.angle - 360
+        }
+
+        // draw
+        ctx.beginPath()
+        ctx.moveTo(0, _this.mainRadius)
+        // console.log(this.mainRadius)
+        ctx.lineTo(0, _this.mainRadius + _this.line)
+        ctx.stroke()
+        // ctx.closePath()
+        ctx.beginPath()
+
+        ctx.fillStyle = '#000'
+        ctx.arc(0, _this.mainRadius + _this.line, _this.ballRadius, 0, Math.PI * 2)
+        ctx.closePath()
+        ctx.fill()
+
+        if (i.numStr != '') {
+          ctx.fillStyle = "#fff"
+          ctx.font = "12px 微软雅黑"
+          ctx.fillText(i.numStr, 0, _this.mainRadius + _this.line);
+        }
+
+        ctx.restore()
+      })
+      ctx.restore()
+      if (!gameOver) {
+        requestAnimationFrame(function () {
+          _this.startGame()
+        })
+      }
+    }
+    //绘制大圆
+    this.drawPanel = function() {
+      ctx.beginPath()
+      ctx.arc(this.centerX, this.centerY, this.mainRadius, 0, Math.PI * 2)
+      ctx.closePath()
+      ctx.fillStyle = '#fd7b03'
+      ctx.fill()
+
+      ctx.fillStyle = '#fff'
+      ctx.font = "40px 微软雅黑"
+      ctx.fillText(level + 1, this.centerX, this.centerY)
+    }
+    //绘制等待小球
+    this.drawWaitBalls = function() {
+      var offset = this.centerY + this.mainRadius + this.line + this.ballRadius;
+      ctx.clearRect(0, offset + 10, this.centerX * 2, 450)
+      waitBalls.forEach(function (i, j) {
+        ctx.save()
+        ctx.translate(0, 30 * j)
+
+        // draw
+        ctx.beginPath()
+        ctx.fillStyle = '#000'
+        ctx.arc(_this.centerX, offset + 40, _this.ballRadius, 0, Math.PI * 2)
+        ctx.closePath()
+        ctx.fill()
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "12px 微软雅黑";
+        ctx.fillText(i.numStr, _this.centerX, offset + 40);
+        ctx.restore()
+      })
+    }
+    // click
+    this.touch = function(){
+      if (gameOver) return;
+      var target = waitBalls.shift()
+      if (!target) return;
+      // console.log(waitBalls)
+      target.angle = 0
+      // 判断小球是否被撞
+      for (let i = 0; i < balls.length; i++) {
+        const angle = balls[i].angle
+        // console.log(angle)
+        let score = (angle <= 7.6 && angle >= -7.6) || (angle >= 352.4 || angle <= -352.4)
+        if (score) {
+          gameOver = true
+          break
+        }
+      }
+
+      balls.push(target)
+      _this.drawWaitBalls()
+
+      if (gameOver) {
+        console.log('game over !!')
+        layer.open({
+          type: 0,
+          title: '',
+          content: 'game over !!',
+          shade: 0.3,
+          closeBtn: 2
+        });
+      } else if (waitBalls.length == 0) {
+        gameOver = true
+        console.log('pass !!')
+        if(level>=levelRank.length-1){
+          layer.msg('通关了？哎呦不错哦', { icon: 6 });
+        }else{
+          layer.open({
+            type: 0,
+            btn: ['继续挑战', '下次再说'],
+            content: '进入下一关？',
+            shade: 0.3,
+            closeBtn: 2,
+            yes: function (index) {
+              level += 1
+              _this.init()
+              layer.close(index);
+            }
+          })
+        }
+      }
+    }
+
+    canvas.onclick = this.touch
+
+  }
+
+</script>
+</html>
