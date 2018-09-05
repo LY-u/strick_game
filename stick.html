@@ -66,20 +66,24 @@
 
     var level = 0               // 难度
     var levelRank = [
-      { "ballNum": 3, "waitNum": 5, "speed": 1, "dir": 0 }, 
-      { "ballNum": 3, "waitNum": 10, "speed": 1, "dir": 0 },
-      { "ballNum": 3, "waitNum": 14, "speed": 1, "dir": 0 },
-      { "ballNum": 4, "waitNum": 10, "speed": 1, "dir": 0 },
-      { "ballNum": 4, "waitNum": 13, "speed": 1, "dir": 0 },
-      { "ballNum": 4, "waitNum": 14, "speed": 2, "dir": 0 },
-      { "ballNum": 5, "waitNum": 10, "speed": 1, "dir": 0 },
-      { "ballNum": 5, "waitNum": 14, "speed": 1, "dir": 1 },
-      { "ballNum": 5, "waitNum": 10, "speed": 2, "dir": 1 },
-      { "ballNum": 6, "waitNum": 12, "speed": 1, "dir": 0 },
-      { "ballNum": 6, "waitNum": 13, "speed": 2, "dir": 1 },
-      { "ballNum": 6, "waitNum": 10, "speed": 3, "dir": 0 },
-      { "ballNum": 7, "waitNum": 12, "speed": 3, "dir": 1 },
-      { "ballNum": 7, "waitNum": 10, "speed": 4, "dir": 1 },
+      { "ballNum": 3, "waitNum": 5, "speed": 1, "dir": 0 },                 // 1
+      { "ballNum": 3, "waitNum": 10, "speed": 1, "dir": 0 },                // 2
+      { "ballNum": 3, "waitNum": 14, "speed": 1, "dir": 0 },                // 3
+      { "ballNum": 4, "waitNum": 10, "speed": 1, "dir": 0 },                // 4
+      { "ballNum": 4, "waitNum": 13, "speed": 1, "dir": 0 },                // 5
+      { "ballNum": 4, "waitNum": 14, "speed": 2, "dir": 0 },                // 6
+      { "ballNum": 5, "waitNum": 14, "speed": 1.5, "dir": 1 },              // 7
+      { "ballNum": 5, "waitNum": 14, "speed": 2, "dir": 0 },                // 8
+      { "ballNum": 5, "waitNum": 16, "speed": 2.5, "dir": 1 },              // 9
+      { "ballNum": 6, "waitNum": 12, "speed": 2, "dir": 0 },                // 10
+      { "ballNum": 6, "waitNum": 13, "speed": 2, "dir": 1 },                // 11
+      { "ballNum": 7, "waitNum": 10, "speed": 3, "dir": 0 },                // 12
+      { "ballNum": 7, "waitNum": 12, "speed": 3, "dir": 1 },                // 13
+      { "ballNum": 8, "waitNum": 10, "speed": 4, "dir": 1 },                // 14
+      { "ballNum": 8, "waitNum": 8, "speed": 4, "dir": 0 },                 // 15
+      { "ballNum": 9, "waitNum": 10, "speed": 5, "dir": 1 },                // 16
+      { "ballNum": 10, "waitNum": 14, "speed": 5.5, "dir": 1 },             // 17
+      { "ballNum": 10, "waitNum": 16, "speed": 6, "dir": 1 },               // 18
     ]
     var ballNum = 0          // 绘制小球
     var waitNum = 0          // 待绘制小球
@@ -244,7 +248,13 @@
           title: '',
           content: 'game over !!',
           shade: 0.3,
-          closeBtn: 2
+          closeBtn: 2,
+          btn: ['再试一次'],
+          yes:function (index){
+            // level = 0
+            _this.init()
+            layer.close(index);
+          }
         });
       } else if (waitBalls.length == 0) {
         gameOver = true
